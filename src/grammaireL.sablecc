@@ -7,7 +7,38 @@ lettre = [['a' .. 'z'] + ['A' .. 'Z']];
 Tokens
 
 espaces = (' ' | 13 | 10)+;
-commentaire= '#' [[0 .. 0xffff] - [10 + 13]]* (10 | 13 | 10 13);
+commentaire = '#' [[0 .. 0xffff] - [10 + 13]]* (10 | 13 | 10 13);
+number = ['0' .. '9']+;
+id = lettre;
+plus = '+';
+moins = '-';
+mult = '*';
+div = '/';
+egal = '=';
+mod = '%';
+ou = ' | ';
+et = ' & ';
+inf = '<';
+sup = '>';
+non = '!';
+l_par = '(';
+r_par = ')';
+l_cro = '[';
+r_cro = ']';
+l_bra = '{';
+r_bra = '}';
+virgule = ',';
+ptvirgule = ';';
+epsilon = (' ' | 13 | 10)+;
+entier = 'entier ';
+si = 'si ';
+alors = ' alors ';
+sinon = ' sinon ';
+tantque = 'tantque ';
+faire = ' faire ';
+retour = 'retour ';
+lire = 'lire()';
+ecrire = 'ecrire()';
 
 Ignored Tokens
 
@@ -15,5 +46,32 @@ espaces, commentaire;
 
 Productions
 
-programme = optdecvar listedecfonc ;
+prog = {p} ldvo ldf;
+ldvo = {vars} ldv ptvirgule | {vide} epsilon;
+    ldv = {vars} dv ldvb | {vide} epsilon;
+        ldvb = {vars} virgule dv ldvb | {vide} epsilon;
+        dv = {var} entier id | {tabvar} entier id l_cro number r_cro;
 
+ldf = {functions} df ldf | {vide} epsilon;
+    df = {function} id l_par ldv r_par ldvo ibloc;
+
+    i = {affectation} iaff | {si} isi | {tantque} itq | {appel} iapp | {bloc} ibloc | {retour} iret | {ecriture} iecr;
+        iaff = {entier} var egal e;
+        isi = {bloc} si e alors ibloc | {bloc2} si e alors ibloc sinon ibloc2;
+        itq = {bloc} tantque e faire ibloc;
+        iapp = {appel} app ptvirgule;
+            app = {expression} id l_par e r_par;
+        ibloc = {i} l_bra i r_bra | {vide} l_bra epsilon r_bra;
+        ibloc2 = {i} l_bra i r_bra | {vide} l_bra epsilon r_bra;
+        iret = {exp} retour e;
+        iecr = {exp} ecrire l_par e r_par;
+
+    var = {identifiant} id | {identifiant2} id l_cro e r_cro;
+
+    e = {ou} e ou e1 | {e1} e1;
+        e1 = {et} e1 et e2 | {e2} e2;
+        e2 = {egal} e2 egal e3 | {inf} e2 inf e3 | {e3} e3;
+        e3 = {plus} e3 plus e4 | {moins} e3 moins e4 | {e4} e4;
+        e4 = {mult} e4 mult e5 | {div} e4 div e5 | {e5} e5;
+        e5 = {non} non e5 | {e6} e6;
+        e6 = {expression} l_par e r_par | {number} number | {appel} app | {variable} var | {lire} lire;
