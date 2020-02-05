@@ -3,21 +3,20 @@ Package sc;
 Helpers
 
 lettre = [['a' .. 'z'] + ['A' .. 'Z']];
+espaces = (' ' | 13 | 10)*;
+commentaire = '#' [[0 .. 0xffff] - [10 + 13]]* (10 | 13 | 10 13);
 
 Tokens
 
-espaces = (' ' | 13 | 10)+;
-commentaire = '#' [[0 .. 0xffff] - [10 + 13]]* (10 | 13 | 10 13);
 number = ['0' .. '9']+;
-id = lettre;
 plus = '+';
 moins = '-';
 mult = '*';
 div = '/';
 egal = '=';
 mod = '%';
-ou = ' | ';
-et = ' & ';
+ou = '|';
+et = '&';
 inf = '<';
 sup = '>';
 non = '!';
@@ -29,42 +28,40 @@ l_bra = '{';
 r_bra = '}';
 virgule = ',';
 ptvirgule = ';';
-epsilon = (' ' | 13 | 10)+;
-entier = 'entier ';
-si = 'si ';
-alors = ' alors ';
-sinon = ' sinon ';
-tantque = 'tantque ';
-faire = ' faire ';
-retour = 'retour ';
-lire = 'lire()';
-ecrire = 'ecrire()';
+entier = 'entier';
+si = 'si';
+alors = 'alors';
+sinon = 'sinon';
+tantque = 'tantque';
+faire = 'faire';
+retour = 'retour';
+id = lettre+;
+ignore = (espaces | commentaire)*;
 
 Ignored Tokens
 
-espaces, commentaire;
+ignore;
 
 Productions
 
-prog = {p} ldvo ldf;
-ldvo = {vars} ldv ptvirgule | {vide} epsilon;
-    ldv = {vars} dv ldvb | {vide} epsilon;
-        ldvb = {vars} virgule dv ldvb | {vide} epsilon;
+prog = {programme} ldvo ldf;
+ldvo = {vars} ldv ptvirgule | {vide};
+    ldv = {vars} dv ldvb | {vide};
         dv = {var} entier id | {tabvar} entier id l_cro number r_cro;
+        ldvb = {vars} virgule dv ldvb | {vide};
 
-ldf = {functions} df ldf | {vide} epsilon;
-    df = {function} id l_par ldv r_par ldvo ibloc;
+ldf = {functions} df ldf | {vide};
+    df = {function} id l_par ldv r_par ibloc;
 
-    i = {affectation} iaff | {si} isi | {tantque} itq | {appel} iapp | {bloc} ibloc | {retour} iret | {ecriture} iecr;
-        iaff = {entier} var egal e;
-        isi = {bloc} si e alors ibloc | {bloc2} si e alors ibloc sinon ibloc2;
-        itq = {bloc} tantque e faire ibloc;
-        iapp = {appel} app ptvirgule;
-            app = {expression} id l_par e r_par;
-        ibloc = {i} l_bra i r_bra | {vide} l_bra epsilon r_bra;
-        ibloc2 = {i} l_bra i r_bra | {vide} l_bra epsilon r_bra;
-        iret = {exp} retour e;
-        iecr = {exp} ecrire l_par e r_par;
+    i = {affectation} iaff | {si} isi | {tantque} itq | {appel} iapp | {retour} iret | {bloc} ibloc | {vide};
+        iaff = {entier} var egal e ptvirgule i;
+        isi = {bloc} si e alors ibloc isinon;
+            isinon = {bloc} sinon ibloc i | {vide} i;
+        itq = {bloc} tantque e faire ibloc i;
+        iapp = {appel} app ptvirgule i;
+            app = {fonction} id l_par e r_par;
+        iret = {exp} retour e ptvirgule i;
+        ibloc = {i} l_bra i r_bra;
 
     var = {identifiant} id | {identifiant2} id l_cro e r_cro;
 
@@ -74,4 +71,5 @@ ldf = {functions} df ldf | {vide} epsilon;
         e3 = {plus} e3 plus e4 | {moins} e3 moins e4 | {e4} e4;
         e4 = {mult} e4 mult e5 | {div} e4 div e5 | {e5} e5;
         e5 = {non} non e5 | {e6} e6;
-        e6 = {expression} l_par e r_par | {number} number | {appel} app | {variable} var | {lire} lire;
+        e6 = {virgule} e6 virgule e7 | {e7} e7;
+        e7 = {expression} l_par e r_par | {number} number | {appel} app | {variable} var | {vide};
