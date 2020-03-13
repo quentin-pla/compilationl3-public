@@ -1,6 +1,5 @@
 import c3a.*;
-import nasm.Nasm;
-import nasm.NasmOperand;
+import nasm.*;
 import ts.Ts;
 import ts.TsItemFct;
 
@@ -10,8 +9,51 @@ public class C3a2nasm implements C3aVisitor<NasmOperand> {
     private Ts tableGlobale;
     private TsItemFct currentFct;
 
+    //Addition
     @Override
     public NasmOperand visit(C3aInstAdd inst) {
+        NasmOperand label = (inst.label != null) ? inst.label.accept(this) : null;
+        NasmOperand op1 = inst.op1.accept(this);
+        NasmOperand op2 = inst.op2.accept(this);
+        NasmOperand dest = inst.result.accept(this);
+        nasm.ajouteInst(new NasmMov(label, dest, op1, ""));
+        nasm.ajouteInst(new NasmAdd(null, dest, op2, ""));
+        return null;
+    }
+
+    //Soustraction
+    @Override
+    public NasmOperand visit(C3aInstSub inst) {
+        NasmOperand label = (inst.label != null) ? inst.label.accept(this) : null;
+        NasmOperand op1 = inst.op1.accept(this);
+        NasmOperand op2 = inst.op2.accept(this);
+        NasmOperand dest = inst.result.accept(this);
+        nasm.ajouteInst(new NasmMov(label, dest, op1, ""));
+        nasm.ajouteInst(new NasmSub(null, dest, op2, ""));
+        return null;
+    }
+
+    //Multiplication
+    @Override
+    public NasmOperand visit(C3aInstMult inst) {
+        NasmOperand label = (inst.label != null) ? inst.label.accept(this) : null;
+        NasmOperand op1 = inst.op1.accept(this);
+        NasmOperand op2 = inst.op2.accept(this);
+        NasmOperand dest = inst.result.accept(this);
+        nasm.ajouteInst(new NasmMov(label, dest, op1, ""));
+        nasm.ajouteInst(new NasmMul(null, dest, op2, ""));
+        return null;
+    }
+
+    //Division
+    @Override
+    public NasmOperand visit(C3aInstDiv inst) {
+        NasmOperand label = (inst.label != null) ? inst.label.accept(this) : null;
+        NasmOperand op1 = inst.op1.accept(this);
+        NasmOperand op2 = inst.op2.accept(this);
+        NasmOperand dest = inst.result.accept(this);
+        nasm.ajouteInst(new NasmMov(label, dest, op1, ""));
+        nasm.ajouteInst(new NasmDiv(null, op2, ""));
         return null;
     }
 
@@ -36,27 +78,12 @@ public class C3a2nasm implements C3aVisitor<NasmOperand> {
     }
 
     @Override
-    public NasmOperand visit(C3aInstMult inst) {
-        return null;
-    }
-
-    @Override
     public NasmOperand visit(C3aInstRead inst) {
         return null;
     }
 
     @Override
-    public NasmOperand visit(C3aInstSub inst) {
-        return null;
-    }
-
-    @Override
     public NasmOperand visit(C3aInstAffect inst) {
-        return null;
-    }
-
-    @Override
-    public NasmOperand visit(C3aInstDiv inst) {
         return null;
     }
 
@@ -105,9 +132,10 @@ public class C3a2nasm implements C3aVisitor<NasmOperand> {
         return null;
     }
 
+    //Temporaire
     @Override
     public NasmOperand visit(C3aTemp oper) {
-        return null;
+        return new NasmRegister(oper.num);
     }
 
     @Override

@@ -1,5 +1,4 @@
-package sa;
-
+import sa.*;
 import ts.*;
 
 public class Sa2ts extends SaDepthFirstVisitor<Void> {

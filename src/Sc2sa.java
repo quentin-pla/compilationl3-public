@@ -1,4 +1,4 @@
-package sa;
+import sa.*;
 import sc.analysis.DepthFirstAdapter;
 import sc.node.*;
 
