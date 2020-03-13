@@ -90,7 +90,7 @@ def findInputFiles() :
 
 ################################################################################
 def deleteCompilationOutputs() :
-  outputExtensions = [".sa", ".sc", ".ts", ".nasm", ".pre-nasm", ".c3a", ".fg", ".fgs", ".ig"]
+  outputExtensions = [".sa", ".sc", ".ts", ".nasm", ".pre-nasm", ".c3a", ".c3aout", ".fg", ".fgs", ".ig"]
   for filename in os.listdir(inputPath) :
     if os.path.splitext(filename)[1] in outputExtensions :
       os.remove(inputPath+filename)
@@ -205,7 +205,7 @@ if __name__ == "__main__" :
 
   saEvaluation = evaluateSa(inputFiles)
   tsEvaluation = evaluateDiff(inputFiles, ".ts", "ts-ref/", "Table des Symboles")
-  c3aEvaluation = evaluateDiff(inputFiles, ".c3a", "c3a-ref/", "Code 3 Adresses")
+  c3aEvaluation = evaluateDiff(inputFiles, ".c3aout", "c3aout-ref/", "Code 3 Adresses")
 
   useColor = True
 
