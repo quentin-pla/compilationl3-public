@@ -12,48 +12,72 @@ public class C3a2nasm implements C3aVisitor<NasmOperand> {
     //Addition
     @Override
     public NasmOperand visit(C3aInstAdd inst) {
+        //Récupération du label si existant
         NasmOperand label = (inst.label != null) ? inst.label.accept(this) : null;
+        //Récupération de la première opérande
         NasmOperand op1 = inst.op1.accept(this);
+        //Récupération de la deuxième opérande
         NasmOperand op2 = inst.op2.accept(this);
-        NasmOperand dest = inst.result.accept(this);
-        nasm.ajouteInst(new NasmMov(label, dest, op1, ""));
-        nasm.ajouteInst(new NasmAdd(null, dest, op2, ""));
+        //Récupération du résultat
+        NasmOperand result = inst.result.accept(this);
+        //Assignation de la première opérande dans le résultat
+        nasm.ajouteInst(new NasmMov(label, result, op1, ""));
+        //Addition de la deuxième opérande au résultat
+        nasm.ajouteInst(new NasmAdd(null, result, op2, ""));
         return null;
     }
 
     //Soustraction
     @Override
     public NasmOperand visit(C3aInstSub inst) {
+        //Récupération du label si existant
         NasmOperand label = (inst.label != null) ? inst.label.accept(this) : null;
+        //Récupération de la première opérande
         NasmOperand op1 = inst.op1.accept(this);
+        //Récupération de la deuxième opérande
         NasmOperand op2 = inst.op2.accept(this);
-        NasmOperand dest = inst.result.accept(this);
-        nasm.ajouteInst(new NasmMov(label, dest, op1, ""));
-        nasm.ajouteInst(new NasmSub(null, dest, op2, ""));
+        //Récupération du résultat
+        NasmOperand result = inst.result.accept(this);
+        //Assignation de la première opérande dans le résultat
+        nasm.ajouteInst(new NasmMov(label, result, op1, ""));
+        //Soustraction de la deuxième opérande au résultat
+        nasm.ajouteInst(new NasmSub(null, result, op2, ""));
         return null;
     }
 
     //Multiplication
     @Override
     public NasmOperand visit(C3aInstMult inst) {
+        //Récupération du label si existant
         NasmOperand label = (inst.label != null) ? inst.label.accept(this) : null;
+        //Récupération de la première opérande
         NasmOperand op1 = inst.op1.accept(this);
+        //Récupération de la deuxième opérande
         NasmOperand op2 = inst.op2.accept(this);
-        NasmOperand dest = inst.result.accept(this);
-        nasm.ajouteInst(new NasmMov(label, dest, op1, ""));
-        nasm.ajouteInst(new NasmMul(null, dest, op2, ""));
+        //Récupération du résultat
+        NasmOperand result = inst.result.accept(this);
+        //Assignation de la première opérande dans le résultat
+        nasm.ajouteInst(new NasmMov(label, result, op1, ""));
+        //Multiplication de la deuxième opérande au résultat
+        nasm.ajouteInst(new NasmMul(null, result, op2, ""));
         return null;
     }
 
     //Division
     @Override
     public NasmOperand visit(C3aInstDiv inst) {
+        //Récupération du label si existant
         NasmOperand label = (inst.label != null) ? inst.label.accept(this) : null;
+        //Récupération de la première opérande
         NasmOperand op1 = inst.op1.accept(this);
+        //Récupération de la deuxième opérande
         NasmOperand op2 = inst.op2.accept(this);
-        NasmOperand dest = inst.result.accept(this);
-        nasm.ajouteInst(new NasmMov(label, dest, op1, ""));
-        nasm.ajouteInst(new NasmDiv(null, op2, ""));
+        //Récupération du résultat
+        NasmOperand result = inst.result.accept(this);
+        //Assignation de la première opérande dans le résultat
+        nasm.ajouteInst(new NasmMov(label, result, op1, ""));
+        //Division de la deuxième opérande au résultat
+        nasm.ajouteInst(new NasmDiv(null, result, op2, ""));
         return null;
     }
 
