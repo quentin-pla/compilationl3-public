@@ -1,4 +1,0 @@
-TABLE GLOBALE
-t	VAR  	10	0
-main	FCT	0
-TABLE LOCALE : main
