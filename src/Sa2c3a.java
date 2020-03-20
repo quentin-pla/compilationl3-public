@@ -6,18 +6,32 @@ import ts.TsItemVar;
 
 public class Sa2c3a extends SaDepthFirstVisitor<C3aOperand> {
     private C3a c3a;
-    private Ts table;
+    private Ts tableGlobale;
+    private Ts tableLocale;
 
     //Constructeur
-    public Sa2c3a(SaNode root, Ts table) {
-        this.table = table;
+    public Sa2c3a(SaNode root, Ts tableGlobale) {
+        //Table globale
+        this.tableGlobale = tableGlobale;
+        //Table locale liée à une fonction
+        this.tableLocale = this.tableGlobale;
+        //Instanciation objet code 3 adresses
         c3a = new C3a();
+        //Parcours instructions
         root.accept(this);
     }
 
     //Getter c3a
     public C3a getC3a() {
         return c3a;
+    }
+
+    //Récupération d'une variable dans la table où elle est située
+    private TsItemVar getVariable(String name){
+        //Récupération de la variable dans la table locale si existante
+        TsItemVar variable = tableLocale.getVar(name);
+        //Si elle est nulle on la récupère dans la table globale
+        return (variable != null) ? variable : tableGlobale.getVar(name);
     }
 
     //Déclaration Programme
@@ -32,12 +46,15 @@ public class Sa2c3a extends SaDepthFirstVisitor<C3aOperand> {
     @Override
     public C3aOperand visit(SaDecFonc node) {
         //Récupération de la fonction à partir de la table
-        TsItemFct fonction = this.table.getFct(node.getNom());
+        TsItemFct fonction = tableGlobale.getFct(node.getNom());
 
         //Entrée fonction
         C3aInstFBegin begin = new C3aInstFBegin(fonction, "entree fonction");
         //Ajout instruction début fonction
         c3a.ajouteInst(begin);
+
+        //Récupération de la table locale liée à la fonction
+        tableLocale = tableGlobale.getTableLocale(node.getNom());
 
         //Parcours toutes les instructions du corps de la fonction
         node.getCorps().accept(this);
@@ -54,7 +71,7 @@ public class Sa2c3a extends SaDepthFirstVisitor<C3aOperand> {
     @Override
     public C3aOperand visit(SaDecVar node) {
         //Récupération de la variable
-        TsItemVar var = table.getVar(node.getNom());
+        TsItemVar var = tableGlobale.getVar(node.getNom());
 
         //Instanciation d'une nouvelle variable c3a
         return new C3aVar(var, null);
@@ -65,6 +82,7 @@ public class Sa2c3a extends SaDepthFirstVisitor<C3aOperand> {
     public C3aOperand visit(SaAppel node) {
         //Récupération des arguments de la fonction
         SaLExp arguments = node.getArguments();
+        //Définition d'une variable de type C3Aoperand
         C3aOperand arg;
         //Pour chaque argument
         while (arguments != null) {
@@ -79,7 +97,7 @@ public class Sa2c3a extends SaDepthFirstVisitor<C3aOperand> {
         }
 
         //Instanciation d'une fonction c3a
-        C3aFunction fonction = new C3aFunction(table.getFct(node.getNom()));
+        C3aFunction fonction = new C3aFunction(tableGlobale.getFct(node.getNom()));
 
         //Instanciation d'une variable temporaire
         C3aTemp result = c3a.newTemp();
@@ -97,7 +115,7 @@ public class Sa2c3a extends SaDepthFirstVisitor<C3aOperand> {
     @Override
     public C3aOperand visit(SaVarSimple node) {
         //Récupération de la référence
-        TsItemVar var = table.getVar(node.getNom());
+        TsItemVar var = getVariable(node.getNom());
 
         //Retourne nouvelle variable
         return new C3aVar(var, null);
@@ -107,7 +125,7 @@ public class Sa2c3a extends SaDepthFirstVisitor<C3aOperand> {
     @Override
     public C3aOperand visit(SaVarIndicee node) {
         //Récupération de la variable
-        TsItemVar var = table.getVar(node.getNom());
+        TsItemVar var = getVariable(node.getNom());
 
         //Récupération de l'indice
         C3aOperand indice = node.getIndice().accept(this);
@@ -492,18 +510,25 @@ public class Sa2c3a extends SaDepthFirstVisitor<C3aOperand> {
         //Parcours des instructions alors
         node.getAlors().accept(this);
 
-        //Saut vers la fin
-        C3aInstJump gotoRetour = new C3aInstJump(retour, "");
-        //Ajout à la liste
-        c3a.ajouteInst(gotoRetour);
+        //Si le bloc sinon existe dans l'instruction si
+        if (node.getSinon() != null) {
+            //Saut vers la fin si le test est validé
+            C3aInstJump gotoRetour = new C3aInstJump(retour, "");
+            //Ajout à la liste
+            c3a.ajouteInst(gotoRetour);
 
-        //Ajout du label sinon à l'instruction suivante
-        c3a.addLabelToNextInst(sinon);
-        //Application des instructions sinon
-        node.getSinon().accept(this);
+            //Ajout du label sinon à l'instruction suivante
+            c3a.addLabelToNextInst(sinon);
+            //Application des instructions sinon
+            node.getSinon().accept(this);
 
-        //Ajout du label retour à l'instruction suivante
-        c3a.addLabelToNextInst(retour);
+            //Ajout du label retour à l'instruction suivante
+            c3a.addLabelToNextInst(retour);
+        } else {
+            //Ajout du label sinon à l'instruction suivante si le bloc n'existe pas
+            c3a.addLabelToNextInst(sinon);
+        }
+
         return null;
     }
 
