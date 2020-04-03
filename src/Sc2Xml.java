@@ -2,7 +2,7 @@ import java.io.*;
 import sc.analysis.*;
 import sc.node.*;
 
-public class Sc2Xml extends DepthFirstAdapter
+class Sc2Xml extends DepthFirstAdapter
 {
     private int indentation;
     private String baseFileName;
