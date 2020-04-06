@@ -3,15 +3,21 @@ import ts.*;
 
 public class Sa2ts extends SaDepthFirstVisitor<Void> {
 
+    //Table globale
     private Ts tableGlobale;
+
+    //Table locale
     private Ts tableLocale;
 
+    //Types de variable possibles
     private enum TypeVariable {
         PARAMETRE, VARIABLE
     }
 
+    //Type de variable
     private TypeVariable typeVariable;
 
+    //Constructeur
     public Sa2ts(SaNode node){
         typeVariable = TypeVariable.VARIABLE;
         tableGlobale = new Ts();
