@@ -3,9 +3,9 @@ import sc.analysis.DepthFirstAdapter;
 import sc.node.*;
 
 public class Sc2sa extends DepthFirstAdapter {
-    
+
     private SaNode returnValue;
-    
+
     public SaNode getRoot() {
         return this.returnValue;
     }

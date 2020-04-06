@@ -6,10 +6,21 @@ public class Sa2ts extends SaDepthFirstVisitor<Void> {
     private Ts tableGlobale;
     private Ts tableLocale;
 
+    private enum TypeVariable {
+        PARAMETRE, VARIABLE
+    }
+
+    private TypeVariable typeVariable;
+
     public Sa2ts(SaNode node){
+        typeVariable = TypeVariable.VARIABLE;
         tableGlobale = new Ts();
-        tableLocale = tableGlobale;
         node.accept(this);
+
+        //Récupéraiton de la fonction main dans la table globale
+        TsItemFct main = tableGlobale.getFct("main");
+        //Affichage d'un message d'erreur si la fonction n'existe pas
+        if (main == null) System.err.println("Fonction main introuvable.");
     }
 
     //Récupération de la table globale
@@ -18,55 +29,61 @@ public class Sa2ts extends SaDepthFirstVisitor<Void> {
         return tableGlobale;
     }
 
+    //Récupérer la table active
+    private Ts getTableActive() {
+        return (tableLocale == null) ? tableGlobale : tableLocale;
+    }
+
     //Ajout d'une variable
     @Override
     public Void visit(SaDecVar node){
-        //Vérification existance variable ayant même nom
-        if (tableLocale.getVar(node.getNom()) == null)
+        //Récupération de la table active
+        Ts tableActive = getTableActive();
+        //Vérification existance variable ayant même nom dans la table
+        if (tableActive.getVar(node.getNom()) == null)
             //Vérification si la variable est un paramètre
-            if (node.tsItem != null && node.tsItem.isParam)
+            if (typeVariable.equals(TypeVariable.PARAMETRE))
                 //Ajout de la variable en tant que paramètre
-                tableLocale.addParam(node.getNom());
+                node.tsItem = tableActive.addParam(node.getNom());
             else
                 //Ajout de la variable dans la table locale
-                tableLocale.addVar(node.getNom(),1);
+                node.tsItem = tableActive.addVar(node.getNom(),1);
         return null;
     }
 
     //Appel de variable
     @Override
     public Void visit(SaVarSimple node){
+        //Définition d'une variable
+        TsItemVar variable;
         //Vérification de la portée de la variable
-        if (node.tsItem.portee != tableGlobale) {
-            //Récupération de la table contenant la variable
-            Ts table = tableGlobale.getTableLocale(node.tsItem.portee.toString());
+        if (tableLocale.getVar(node.getNom()) != null) {
             //Récupération de la variable liée
-            TsItemVar var = table.getVar(node.getNom());
+            variable = tableLocale.getVar(node.getNom());
             //Si variable liée introuvable
-            if (var == null)
+            if (variable == null)
                 //Vérification si paramètre
-                if (node.tsItem.isParam)
+                if (typeVariable.equals(TypeVariable.PARAMETRE))
                     //Affichage message erreur
                     System.err.println("Paramètre introuvable.");
+                //Variable locale
                 else
                     //Affichage message erreur
                     System.err.println("Variable introuvable.");
             else
                 //Récupération des informations de la variable liée
-                node.tsItem = var;
+                node.tsItem = variable;
         } else {
             //Récupération de la variable liée dans la table globale
-            TsItemVar var = tableGlobale.getVar(node.getNom());
+            variable = tableGlobale.getVar(node.getNom());
             //Variable introuvable ?
-            if(var == null)
+            if(variable == null)
                 //Affichage message erreur
                 System.err.println("Variable introuvable.");
             else
                 //Récupération des informations de la variable liée
-                node.tsItem = var;
+                node.tsItem = variable;
         }
-        //Ajout de la varible dans la table globale
-        this.tableGlobale.addVar(node.getNom(),node.tsItem.getTaille());
         return null;
     }
 
@@ -74,9 +91,10 @@ public class Sa2ts extends SaDepthFirstVisitor<Void> {
     @Override
     public Void visit(SaDecTab node){
         //Vérification s'il n'existe pas une variable ayant le même nom
-        if(tableGlobale.getVar(node.getNom()) == null)
+        // et que la taille du tableau est supérieure à 1
+        if (tableGlobale.getVar(node.getNom()) == null && node.getTaille() > 1)
             //Ajout du tableau dans la table globale
-            tableGlobale.addVar(node.getNom(),node.getTaille());
+            node.tsItem = tableGlobale.addVar(node.getNom(),node.getTaille());
         return null;
     }
 
@@ -98,33 +116,36 @@ public class Sa2ts extends SaDepthFirstVisitor<Void> {
     //Ajout d'une fonction
     @Override
     public Void visit(SaDecFonc node){
-        //Vérification fonction même nom n'existe pas
-        if (tableLocale.getFct(node.getNom()) == null){
+        //Vérification que la fonction n'existe pas
+        if (tableGlobale.getFct(node.getNom()) == null){
             //Initialisation nouvelle table locale pour la fonction
             tableLocale = new Ts();
             //Récupération des paramètres de la fonction
             SaLDec params = node.getParametres();
             //Nombre de paramètres
-            int nombreParams = (params == null)?0:params.length();
+            int nombreParams = (params == null) ? 0 : params.length();
             //Si la fonction contient des paramètres
-            if (nombreParams > 0)
-                //Pour chaque paramètre
-                while(params != null){
-                    //Récupération du paramètre
-                    SaDec parametre = params.getTete();
-                    //Ajout d'un paramètre dans la table locale de la fonction
-                    tableLocale.addParam(parametre.getNom());
-                    //Passage au paramète suivant
-                    params = params.getQueue();
-                }
+            if (nombreParams > 0) {
+                //Variable de type paramètre
+                typeVariable = TypeVariable.PARAMETRE;
+                //Parcours des paramètres
+                params.accept(this);
+            }
             //Récupération des variables de la fonction
             SaLDec vars = node.getVariable();
-            //S'il y a des variables
-            if (vars != null)
-                //Ajout des variables à la table locale
+            //S'il y a des variables locales
+            if (vars != null) {
+                //Variable de type locale
+                typeVariable = TypeVariable.VARIABLE;
+                //Parcours des variables locales
                 vars.accept(this);
+            }
+            //Parcours des instructions du corps de la fonction
+            if (node.getCorps() != null) node.getCorps().accept(this);
             //Ajout de la fonction à la table globale
-            this.tableGlobale.addFct(node.getNom(),nombreParams,tableLocale,node);
+            node.tsItem = tableGlobale.addFct(node.getNom(),nombreParams,tableLocale,node);
+            //Passage de la table locale à null
+            tableLocale = null;
         } else {
             //Affichage d'un message d'erreur
             System.err.println("Fonction déjà existante.");
@@ -135,22 +156,23 @@ public class Sa2ts extends SaDepthFirstVisitor<Void> {
     //Appel d'une fonction
     @Override
     public Void visit(SaAppel node){
-        //Récupéraiton du main dans la table globale
-        TsItemFct main = tableGlobale.getFct("main");
         //Récupéraiton de la fonction dans la table globale
         TsItemFct fonction = tableGlobale.getFct(node.getNom());
         //Si la fonction est introuvable
-        if(main == null || fonction == null)
+        if(fonction == null)
             //Affichage message d'erreur
             System.err.println("Fonction introuvable.");
-        else
-            //Vérification du nombre d'arguments
-            if (node.getArguments().length() == fonction.getNbArgs())
+        else {
+            //Récupération du nombre de paramètres
+            int nombreParametres = (node.getArguments() == null) ? 0 : node.getArguments().length();
+            //Vérification du nombre de paramètres
+            if (nombreParametres == fonction.getNbArgs())
                 //Récupération des informations de la fonction liée
                 node.tsItem = fonction;
             else
                 //Affichage message d'erreur
-                System.err.println("Nombre d'arguments invalides fonction.");
+                System.err.println("Nombre d'arguments invalide fonction.");
+        }
         return null;
     }
 }
