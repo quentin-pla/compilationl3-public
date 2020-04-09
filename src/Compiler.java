@@ -28,14 +28,14 @@ public class Compiler
 	}
 	catch (IOException e) {
 	    e.printStackTrace();
-	} 
+	}
 	try {
 	    // Create a Parser instance.
 	    Parser p = new Parser(new Lexer(br));
 	    // Parse the input.
 	    System.out.print("[BUILD SC] ");
 	    Start tree = p.parse();
-	    
+
 	    System.out.println("[PRINT SC]");
 	    tree.apply(new Sc2Xml(baseName));
 
@@ -46,7 +46,7 @@ public class Compiler
 
 	    System.out.println("[PRINT SA]");
 	    new Sa2Xml(saRoot, baseName);
-		    
+
 	    System.out.print("[BUILD TS] ");
 	    Ts table = new Sa2ts(saRoot).getTableGlobale();
 
@@ -59,7 +59,7 @@ public class Compiler
 	    System.out.println("[SA OUT]");
 	    saEval.affiche(baseName);
 
-	    /*System.out.print("[BUILD C3A] ");
+	    System.out.print("[BUILD C3A] ");
 	    C3a c3a = new Sa2c3a(saRoot, table).getC3a();
 
 	    System.out.print("[PRINT C3A] ");
@@ -68,13 +68,13 @@ public class Compiler
 	    System.out.println("[C3A OUT]");
 	    C3aEval c3aEval = new C3aEval(c3a, table);
 	    c3aEval.affiche(baseName);
-	    
+
 	    System.out.print("[BUILD PRE NASM] ");
 	    Nasm nasm = new C3a2nasm(c3a, table).getNasm();
 	    System.out.println("[PRINT PRE NASM] ");
 	    nasm.affichePre(baseName);
 
-	    /*ystem.out.print("[BUILD FG] ");
+	    System.out.print("[BUILD FG] ");
 	    Fg fg = new Fg(nasm);
 	    System.out.print("[PRINT FG] ");
 	    fg.affiche(baseName);
@@ -82,8 +82,8 @@ public class Compiler
 	    System.out.println("[SOLVE FG]");
 	    FgSolution fgSolution = new FgSolution(nasm, fg);
 	    fgSolution.affiche(baseName);
-	    
-	    System.out.print("[BUILD IG] ");
+
+	    /*System.out.print("[BUILD IG] ");
 	    Ig ig = new Ig(fgSolution);
 
 	    System.out.print("[PRINT IG] ");
@@ -109,5 +109,5 @@ public class Compiler
 	}
 	return s;
     }
-    
+
 }
