@@ -32,14 +32,14 @@ public class C3a2nasm implements C3aVisitor<NasmOperand> {
         nasm.ajouteInst(new NasmCall(null, label, ""));
 
         //Valeur retour programme
-        NasmOperand cst1 = new NasmConstant(0);
+        NasmOperand constante1 = new NasmConstant(0);
         //Association de la constante au registre ebx
-        nasm.ajouteInst(new NasmMov(null, reg_ebx, cst1, ""));
+        nasm.ajouteInst(new NasmMov(null, reg_ebx, constante1, ""));
 
         //Création d'une constante de valeur 1
-        NasmOperand cst2 = new NasmConstant(1);
+        NasmOperand constante2 = new NasmConstant(1);
         //Association de la constante au registre eax
-        nasm.ajouteInst(new NasmMov(null, reg_eax, cst2, ""));
+        nasm.ajouteInst(new NasmMov(null, reg_eax, constante2, ""));
 
         //Interruption
         nasm.ajouteInst(new NasmInt(null, ""));
@@ -67,14 +67,14 @@ public class C3a2nasm implements C3aVisitor<NasmOperand> {
         NasmOperand label = (inst.val.identif != null) ? new NasmLabel(inst.val.identif) : null;
 
         //Création d'un nouveau registre
-        NasmRegister reg_ebp = new NasmRegister(Nasm.REG_EBP);
+        NasmRegister reg_ebp = nasm.newRegister();
         //Registre utilisant la macro EBP
         reg_ebp.colorRegister(Nasm.REG_EBP);
         //Sauvegarde de la valeur de ebp
         nasm.ajouteInst(new NasmPush(label, reg_ebp, ""));
 
         //Création d'un nouveau registre
-        NasmRegister reg_esp = new NasmRegister(Nasm.REG_ESP);
+        NasmRegister reg_esp = nasm.newRegister();
         //Registre utilisant la macro ESP
         reg_esp.colorRegister(Nasm.REG_ESP);
         //Attribution d'une nouvelle valeur pour ebp
@@ -102,12 +102,12 @@ public class C3a2nasm implements C3aVisitor<NasmOperand> {
         NasmOperand label = getLabel(inst);
 
         //Création d'un nouveau registre
-        NasmRegister reg_ebp = new NasmRegister(Nasm.REG_EBP);
+        NasmRegister reg_ebp = nasm.newRegister();
         //Registre utilisant la macro EBP
         reg_ebp.colorRegister(Nasm.REG_EBP);
 
         //Création d'un nouveau registre
-        NasmRegister reg_esp = new NasmRegister(Nasm.REG_ESP);
+        NasmRegister reg_esp = nasm.newRegister();
         //Registre utilisant la macro ESP
         reg_esp.colorRegister(Nasm.REG_ESP);
 
